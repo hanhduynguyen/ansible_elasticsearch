@@ -1,14 +1,15 @@
 es_cluster:
   first_node: 
-    - hostname: esrep01
-      ip: 192.168.56.85
+    - hostname: es01
+      ip: 192.168.56.81
   second_node: 
-    - hostname: esrep02
-      ip: 192.168.56.86
+    - hostname: es02
+      ip: 192.168.56.82
   third_node: 
-    - hostname: esrep03
-      ip: 192.168.56.87
+    - hostname: es03
+      ip: 192.168.56.83
 ES_HOME: /usr/share/elasticsearch
+first_node: "es01"
 ES_PATH_CONF: /usr/share/elasticsearch/config
 password : password
 cluster_name: es_cluster
@@ -18,10 +19,16 @@ elasticsearch_http_port: 9200
 elasticsearch_path_home: "/usr/share/elasticsearch"
 elasticsearch_path_etc: "/etc/elasticsearch"
 elasticsearch_tls_cert_ca_pass: ""
+kibana_path_etc: "/etc/kibana"
+kibana_user_group: "kibana"
+kibana_user: "kibana"
 elasticsearch_tls_cert_pass: ""
 elasticsearch_tls_cert_dir: "certs"
+kibana_tls_cert_dir: "certs"
 elasticsearch_user: "elasticsearch"
 elasticsearch_user_group: "elasticsearch"
+elastic_password: "password"
+ca_node: "es01"
 network_inf: "eth1"
 repo_mountpoint:  "/mnt"
 # es_nodenames:

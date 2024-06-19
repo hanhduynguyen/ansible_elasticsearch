@@ -57,10 +57,55 @@
     - name: Display extracted IP address
       debug:
         var: extracted_ip_address
+    - name: Display extracted IP address
+      debug:
+        var: extracted_ip_address
+    
+    - name: Create a certificate directory
+      file:
+        owner: kibana
+        group: '{{ kibana_user_group }}'
+        mode: u=rwx,g+rx,o-rwx
+        path: '{{ kibana_path_etc }}/{{ kibana_tls_cert_dir }}'
+        state: directory
+      when: kibana_tls_cert_dir is defined
+    
     - name: Generate openssl.cnf
       template:
         src: templates/openssl.j2
-        dest: "{{ elasticsearch_path_etc }}/{{ elasticsearch_tls_cert_dir }}/openssl.cnf"
+        dest: "{{ kibana_path_etc }}/{{ kibana_tls_cert_dir }}/openssl.cnf"
+    - name: Copy CA files to remote hosts
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "/etc/kibana/certs/{{ item.dest }}"
+        mode: 0644  # Optional: Set file permissions
+      loop:
+        - { src: '/tmp/ca.key', dest: 'ca.key' }
+        - { src: '/tmp/ca.crt', dest: 'ca.crt' }
+      when: ansible_hostname != "{{ca_node}}"
+    - name: Configure TLS
+      shell:
+        cmd: |
+          openssl genrsa -out /etc/kibana/certs/kibana.key 2048
+          openssl req -new -key /etc/kibana/certs/kibana.key -out /etc/kibana/certs/kibana.csr -config openssl.cnf
+          openssl x509 -req -in /etc/kibana/certs/kibana.csr -CA /etc/kibana/certs/ca.crt -CAkey /etc/kibana/certs/ca.key -CAcreateserial -out /etc/kibana/certs/kibana.crt -days 3650 -extensions v3_req -extfile openssl.cnf
+          chmod 600 /etc/kibana/certs/kibana.*
+          chown kibana:kibana /etc/kibana/certs/kibana.key
+          chmod 640 /etc/kibana/certs/kibana.key
+          chown kibana:kibana /etc/kibana/certs/kibana.crt
+          chmod 640 /etc/kibana/certs/kibana.crt    
+    # - name: Generate Kibana key pair and certificate
+    #   ansible.builtin.shell: |
+    #     openssl genrsa -out /etc/kibana/certs/kibana.key 2048
+    #     openssl req -new -key /etc/kibana/certs/kibana.key -out /etc/kibana/certs/kibana.csr -config /path/to/kibana-openssl.cnf
+    #     openssl x509 -req -in /etc/kibana/certs/kibana.csr -CA /etc/kibana/certs/ca.crt -CAkey /etc/kibana/certs/ca.key -CAcreateserial -out /etc/kibana/certs/kibana.crt -days 3650 -extensions v3_req -extfile /path/to/kibana-openssl.cnf
+    #     chmod 600 /etc/kibana/certs/kibana.*
+    #     chown kibana:kibana /etc/kibana/certs/kibana.key
+    #     chmod 640 /etc/kibana/certs/kibana.key
+    #     chown kibana:kibana /etc/kibana/certs/kibana.crt
+    #     chmod 640 /etc/kibana/certs/kibana.crt
+    #   vars:
+    #     kibana_openssl_cnf: "/path/to/kibana-openssl.cnf"
     - name: Start Kibana service
       systemd:
         name: kibana
