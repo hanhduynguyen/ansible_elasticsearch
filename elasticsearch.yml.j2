@@ -1,0 +1,40 @@
+cluster.name: {{cluster_name}}
+node.name: "{{ ansible_hostname }}"
+http.port: 9200
+network.host: "{{ ansible_hostname }}"
+path.logs: /var/log/elasticsearch/
+path.data: /usr/share/elasticsearch/data/directory
+discovery.seed_hosts:
+{% for group in es_cluster %}
+{% for node in es_cluster[group] %}
+  - {{ node.hostname }}
+{% endfor %}
+{% endfor %}
+
+cluster.initial_master_nodes:
+{% for group in es_cluster %}
+{% for node in es_cluster[group] %}
+  - {{ node.hostname }}
+{% endfor %}
+{% endfor %}
+
+xpack.security.enabled: true
+# Transport Layer SSL/TLS
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.key: /etc/elasticsearch/certs/es.key
+xpack.security.transport.ssl.certificate: /etc/elasticsearch/certs/es.crt
+xpack.security.transport.ssl.certificate_authorities: ["/etc/elasticsearch/certs/ca.crt"]
+
+# HTTP Layer SSL/TLS
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: /etc/elasticsearch/certs/es.key
+xpack.security.http.ssl.certificate: /etc/elasticsearch/certs/es.crt
+xpack.security.http.ssl.certificate_authorities: ["/etc/elasticsearch/certs/ca.crt"]
+
+xpack.security.enrollment.enabled: true
+path.repo: ["/tmp/repo"]
+
+## Configure from target cluster
+cluster.remote.source_cluster.seeds:
+  - 192.168.56.81:9300

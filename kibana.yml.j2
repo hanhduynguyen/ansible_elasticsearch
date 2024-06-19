@@ -1,0 +1,22 @@
+elasticsearch.hosts: [
+{% for node_name, node_info in es_cluster.items() %}
+"https://{{node_info[0].hostname}}:9200"{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+# SSL settings for connecting to Elasticsearch
+elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/certs/ca.crt"]
+# If you have client certificate and key
+elasticsearch.ssl.certificate: "/etc/kibana/certs/kibana.crt"
+elasticsearch.ssl.key: "/etc/kibana/certs/kibana.key"
+
+elasticsearch.requestTimeout: 60000
+elasticsearch.shardTimeout: 30000
+server.host: "0.0.0.0"
+#xpack.reporting.capture.browser.chromium.disableSandbox: true
+# Credentials for connecting to Elasticsearch
+elasticsearch.username: "admin"
+elasticsearch.password: "password"
+# Optional: Kibana server settings
+server.ssl.enabled: true
+server.ssl.certificate: "/etc/kibana/certs/kibana.crt"
+server.ssl.key: "/etc/kibana/certs/kibana.key"

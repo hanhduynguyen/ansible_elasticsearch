@@ -1,0 +1,33 @@
+es_cluster:
+  first_node: 
+    - hostname: esrep01
+      ip: 192.168.56.85
+  second_node: 
+    - hostname: esrep02
+      ip: 192.168.56.86
+  third_node: 
+    - hostname: esrep03
+      ip: 192.168.56.87
+ES_HOME: /usr/share/elasticsearch
+ES_PATH_CONF: /usr/share/elasticsearch/config
+password : password
+cluster_name: es_cluster
+es_password: "password"
+user : esuser
+elasticsearch_http_port: 9200
+elasticsearch_path_home: "/usr/share/elasticsearch"
+elasticsearch_path_etc: "/etc/elasticsearch"
+elasticsearch_tls_cert_ca_pass: ""
+elasticsearch_tls_cert_pass: ""
+elasticsearch_tls_cert_dir: "certs"
+elasticsearch_user: "elasticsearch"
+elasticsearch_user_group: "elasticsearch"
+network_inf: "eth1"
+repo_mountpoint:  "/mnt"
+# es_nodenames:
+#   - node1_hostname: esrep01
+#     node1_public_ip: 192.168.56.85
+#     node2_hostname: esrep02
+#     node2_public_ip: 192.168.56.86
+#     node2_hostname: esrep03
+#     node2_public_ip: 192.168.56.87

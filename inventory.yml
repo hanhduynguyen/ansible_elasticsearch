@@ -1,0 +1,8 @@
+all:
+  hosts:
+    esrep01:
+      ansible_host: 192.168.56.85
+    esrep02:
+      ansible_host: 192.168.56.86
+    esrep03:
+      ansible_host: 192.168.56.87

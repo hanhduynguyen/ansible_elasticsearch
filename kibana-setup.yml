@@ -1,0 +1,68 @@
+---
+- name: Install and configure Kibana
+  hosts: kibana
+  become: yes
+  user: root
+  tasks:
+    # - name: Import Elasticsearch GPG key
+    #   rpm_key:
+    #     state: present
+    #     key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+    # - name: Add Kibana repository
+    #   yum_repository:
+    #     name: elastic-7.x
+    #     description: "Elastic repository for 7.x packages"
+    #     baseurl: https://artifacts.elastic.co/packages/7.x/yum
+    #     gpgcheck: yes
+    #     gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    #     enabled: yes
+
+    # - name: Update yum cache
+    #   command: yum makecache
+
+    # - name: Install Kibana
+    #   yum:
+    #     name: kibana
+    #     state: present
+    - name: Download Kibana RPM using curl
+      command: curl -o /tmp/kibana.rpm https://artifacts.elastic.co/downloads/kibana/kibana-8.11.4-x86_64.rpm
+      args:
+        creates: /tmp/kibana.rpm
+    # - name: Download Elasticsearch RPM using curl
+    #   command: curl -o /tmp/elasticsearch.rpm https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.15.0-x86_64.rpm
+    #   args:
+    #     creates: /tmp/elasticsearch.rpm
+
+    - name: Install Kibana from RPM
+      command: yum -y localinstall /tmp/kibana.rpm
+    - name: Configure Kibana 
+      template:
+        src: kibana.yml.j2
+        dest: /etc/kibana/kibana.yml
+    - name: Get IP address of eth1
+      ansible.builtin.debug:
+        msg: "{{ ansible_all_ipv4_addresses | select('match', '^192\\.168\\.56\\.') }}"
+
+    - name: Register IP address of eth1
+      ansible.builtin.set_fact:
+        ip_address_eth1: "{{ ansible_all_ipv4_addresses | select('match', '^192\\.168\\.56\\.') | list }}"
+      when: ansible_all_ipv4_addresses is defined and ansible_all_ipv4_addresses | select('match', '^192\\.168\\.56\\.') | list | length > 0
+
+    - name: Extract IP address from ip_address_eth1
+      set_fact:
+        extracted_ip_address: "{{ ip_address_eth1[0] }}"
+      when: ip_address_eth1 | length > 0
+
+    - name: Display extracted IP address
+      debug:
+        var: extracted_ip_address
+    - name: Generate openssl.cnf
+      template:
+        src: templates/openssl.j2
+        dest: "{{ elasticsearch_path_etc }}/{{ elasticsearch_tls_cert_dir }}/openssl.cnf"
+    - name: Start Kibana service
+      systemd:
+        name: kibana
+        enabled: yes
+        state: started
